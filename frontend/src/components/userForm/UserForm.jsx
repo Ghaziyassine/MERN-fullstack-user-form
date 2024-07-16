@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, uploadUser, deleteUser } from '../features/users/usersSlice';
-import { Link } from 'react-router-dom';
+import { fetchUsers, uploadUser, deleteUser } from '../../features/users/usersSlice';
+import { useNavigate } from 'react-router-dom';
 
 function App() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { users, loading, error } = useSelector((state) => state.user);
 
   useEffect(() => {
@@ -20,7 +21,10 @@ function App() {
     dispatch(deleteUser(id));
   };
 
-  
+  const handleUpdate = id => {
+    navigate(`/update/${id}`)
+  }
+
 
 
 
@@ -94,14 +98,13 @@ function App() {
             </div>
             <div>
 
-              <Link to={`/update/${user._id}`}>
-                <button
-                  className="middle none center mr-4 rounded-lg bg-indigo-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                  data-ripple-light="true"
-                >
-                  Update
-                </button>
-              </Link>
+              <button
+                onClick={() => handleUpdate(user._id)}
+                className="middle none center mr-4 rounded-lg bg-indigo-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-indigo-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                data-ripple-light="true"
+              >
+                Update
+              </button>
               <button
                 onClick={() => handleDelete(user._id)}
                 className="middle none center mr-4 rounded-lg bg-red-500 py-3 px-6 font-sans text-xs font-bold uppercase text-white shadow-md shadow-red-500/20 transition-all hover:shadow-lg hover:shadow-red-500/40 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"

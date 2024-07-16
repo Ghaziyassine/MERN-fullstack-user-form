@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
-import UserForm from "./components/UserForm";
-import UpdateForm from "./components/UpdateForm";
+import UserForm from "./components/userForm/UserForm";
+import UpdateForm from "./components/userForm/UpdateForm";
 
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<UserForm />} />
-        <Route path="/update/:userId" element={<UpdateForm />} />
+        <Route path="/update/:id" element={<UpdateForm />} />
       </Routes>
     </>
   )

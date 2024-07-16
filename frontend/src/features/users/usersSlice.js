@@ -16,11 +16,24 @@ export const deleteUser = createAsyncThunk('user/delete', async (userId) => {
   return userId;
 });
 
-export const updateUser = createAsyncThunk('user/update', async ({ id, formData }) => {
-  const response = await axios.put(`http://localhost:3000/api/users/${id}`, formData);
-  return response.data;
-});
+export const updateUser = createAsyncThunk('user/updateUser', async ({ id, name, email, file }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('file', file);
 
+      const response = await axios.put(`http://localhost:3000/api/users/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
 
 
 
@@ -68,15 +81,15 @@ const userSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(updateUser.pending, (state) => {
-        state.loading = true;
+        state.status = 'loading';
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.loading = false;
-        state.users.push(action.payload);
+        state.status = 'succeeded';
+        state.user = action.payload;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
+        state.status = 'failed';
+        state.error = action.payload;
       });
   },
 });
