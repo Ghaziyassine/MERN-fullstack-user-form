@@ -1,38 +1,43 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+
+
+const URL = import.meta.env.VITE_API
+
+
 export const uploadUser = createAsyncThunk('user/upload', async (formData) => {
-  const response = await axios.post('http://localhost:3000/api/users', formData);
+  const response = await axios.post(URL, formData);
   return response.data;
 });
 
 export const fetchUsers = createAsyncThunk('user/fetch', async () => {
-  const response = await axios.get('http://localhost:3000/api/users');
+  const response = await axios.get(URL);
   return response.data;
 });
 
 export const deleteUser = createAsyncThunk('user/delete', async (userId) => {
-  await axios.delete(`http://localhost:3000/api/users/${userId}`);
+  await axios.delete(URL + "/" + userId);
   return userId;
 });
 
 export const updateUser = createAsyncThunk('user/updateUser', async ({ id, name, email, file }, { rejectWithValue }) => {
-    try {
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('email', email);
-      formData.append('file', file);
+  try {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('file', file);
 
-      const response = await axios.put(`http://localhost:3000/api/users/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
+    const response = await axios.put( URL+'/'+id, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
   }
+}
 );
 
 

@@ -1,29 +1,29 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const multer = require('multer');
-const { GridFsStorage } = require('multer-gridfs-storage');
-const Grid = require('gridfs-stream');
-const crypto = require('crypto');
-const path = require('path');
-const cors = require('cors');
-const File = require('./models/File')
-const User = require('./models/User')
+import express, { json } from 'express';
+import { createConnection, connect, mongo, Types } from 'mongoose';
+import multer from 'multer';
+import { GridFsStorage } from 'multer-gridfs-storage';
+import Grid from 'gridfs-stream';
+import { randomBytes } from 'crypto';
+import { extname } from 'path';
+import cors from 'cors';
+import File from './models/File';
+import User from './models/User'; // Import User model correctly
 
 // Create an instance of Express
-const app = express();
+const app = express();              
 
 // Middleware to parse JSON bodies
-app.use(express.json());
+app.use(json());
 app.use(cors());
 
 // MongoDB URL
 const dbURI = "mongodb://127.0.0.1:27017/yassine";
 
 // Create a MongoDB connection
-const conn = mongoose.createConnection(dbURI);
+const conn = createConnection(dbURI);
 
 // Connection to MongoDB
-mongoose.connect(dbURI)
+connect(dbURI)
   .then(() => {
     console.log("You are connected to the database");
     app.listen(3000, () => {
@@ -37,7 +37,7 @@ mongoose.connect(dbURI)
 let gfs;
 conn.once('open', () => {
   // Init stream
-  gfs = Grid(conn.db, mongoose.mongo);
+  gfs = Grid(conn.db, mongo);
   gfs.collection('uploads');
 });
 
@@ -46,11 +46,11 @@ const storage = new GridFsStorage({
   url: dbURI,
   file: (req, file) => {
     return new Promise((resolve, reject) => {
-      crypto.randomBytes(16, (err, buf) => {
+      randomBytes(16, (err, buf) => {
         if (err) {
           return reject(err);
         }
-        const filename = buf.toString('hex') + path.extname(file.originalname);
+        const filename = buf.toString('hex') + extname(file.originalname);
         const fileInfo = {
           filename: filename,
           bucketName: 'uploads' // Ensure this matches your bucket name
@@ -61,7 +61,6 @@ const storage = new GridFsStorage({
   }
 });
 const upload = multer({ storage });
-
 
 // Basic route for testing
 app.get('/', (req, res) => {
@@ -95,7 +94,7 @@ app.post('/api/users/', upload.single('file'), async (req, res) => {
 // Route to get all users
 app.get('/api/users/', async (req, res) => {
   try {
-    const users = await User.find().populate('photo');
+    const users = await User.find().populate('photo'); // Correct usage of find method
     res.status(200).json(users);
   } catch (error) {
     console.error(error);
@@ -103,37 +102,37 @@ app.get('/api/users/', async (req, res) => {
   }
 });
 
-
-//get user by id
+// Get user by ID
 app.get('/api/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const u = await User.findById(id).populate('photo');
+    const user = await User.findById(id).populate('photo'); // Correct usage of findById method
 
-    res.status(200).json(u);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-
-
-//Delete user
+// Delete user
 app.delete('/api/users/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const u = await User.findById(id);
-    if (!u) {
+    const user = await User.findById(id); // Correct usage of findById method
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
     // Delete the associated file and chunks
-    const fileId = u.photo;
+    const fileId = user.photo;
     await gfs.files.deleteOne({ _id: fileId });
     await conn.db.collection('uploads.chunks').deleteMany({ files_id: fileId });
 
-    //Delete user
-    await User.findByIdAndDelete(id, req.body);
-
+    // Delete user
+    await User.findByIdAndDelete(id); // Correct usage of findByIdAndDelete method
 
     res.status(200).json({ message: "User deleted successfully" });
 
@@ -142,14 +141,12 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-
-
 // Get image by ID
 app.get('/api/image/:id', async (req, res) => {
   try {
-    const fileId = new mongoose.Types.ObjectId(req.params.id);
+    const fileId = new Types.ObjectId(req.params.id);
 
-    const bucket = new mongoose.mongo.GridFSBucket(conn.db, {
+    const bucket = new mongo.GridFSBucket(conn.db, {
       bucketName: 'uploads'
     });
 
@@ -173,7 +170,6 @@ app.get('/api/image/:id', async (req, res) => {
   }
 });
 
-
 // Update user by ID
 app.put('/api/users/:id', upload.single('file'), async (req, res) => {
   try {
@@ -182,7 +178,7 @@ app.put('/api/users/:id', upload.single('file'), async (req, res) => {
     let photoId;
 
     // Find the existing user
-    const user = await User.findById(id);
+    const user = await User.findById(id); // Correct usage of findById method
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
