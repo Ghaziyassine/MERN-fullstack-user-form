@@ -30,7 +30,6 @@ function App() {
 
   return (
     <div className="p-4 max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
-      <p>{import.meta.env.VITE_API}</p>
       <h1 className='text-3xl font-bold flex justify-center mb-5'>Users</h1>
       <form onSubmit={handleCreateUser} className="space-y-4 p-4 bg-gray-100 rounded-md shadow-md">
         <div className="flex flex-col">
