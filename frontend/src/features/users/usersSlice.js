@@ -6,31 +6,75 @@ import axios from 'axios';
 const URL = import.meta.env.VITE_API
 
 
-export const uploadUser = createAsyncThunk('user/upload', async (formData) => {
-  const response = await axios.post(URL, formData);
-  return response.data;
+export const uploadUser = createAsyncThunk('user/upload', async (formData, { getState, rejectWithValue }) => {
+  try {
+    const state = getState();
+    const token = state.auth.token; // Get the token from the state
+    // console.log('creating users with token:', token);
+    const response = await axios.post(URL, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Include the token in the headers
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
 });
 
-export const fetchUsers = createAsyncThunk('user/fetch', async () => {
-  const response = await axios.get(URL);
-  return response.data;
+
+export const fetchUsers = createAsyncThunk(
+  'user/fetch',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+      // console.log('Fetching users with token:', token);
+      const response = await axios.get(URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Fetch users error:', error);
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const deleteUser = createAsyncThunk('user/delete', async (userId, { getState, rejectWithValue }) => {
+  try {
+    const state = getState();
+    const token = state.auth.token;
+    await axios.delete(URL + "/" + userId, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return userId;
+  } catch (error) {
+    console.error('delete users error:', error);
+    return rejectWithValue(error.response.data);
+  }
 });
 
-export const deleteUser = createAsyncThunk('user/delete', async (userId) => {
-  await axios.delete(URL + "/" + userId);
-  return userId;
-});
 
-export const updateUser = createAsyncThunk('user/updateUser', async ({ id, name, email, file }, { rejectWithValue }) => {
+export const updateUser = createAsyncThunk('user/updateUser', async ({ id, name, email, file }, { getState,rejectWithValue }) => {
   try {
     const formData = new FormData();
     formData.append('name', name);
     formData.append('email', email);
     formData.append('file', file);
 
-    const response = await axios.put( URL+'/'+id, formData, {
+    const state = getState();
+    const token = state.auth.token;
+    const response = await axios.put(URL + '/' + id, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+
       },
     });
     return response.data;
@@ -100,3 +144,18 @@ const userSlice = createSlice({
 });
 
 export default userSlice.reducer;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
