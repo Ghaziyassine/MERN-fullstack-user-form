@@ -23,17 +23,25 @@ const useAuth = () => {
 
       try {
         const res = await client.init({ onLoad: 'login-required' });
-        const loginState = res ? { isLogin: true, token: client.token } : { isLogin: false, token: null };
-        setIsLogin(loginState.isLogin);
-        setToken(loginState.token);
-        setKeycloak(client);
-        dispatch(setLogin(loginState));
+        if (res) {
+          const isAdmin = client.hasResourceRole('admin-role', import.meta.env.VITE_KEYCLOAK_CLIENT);
+          const loginState = { isLogin: true, token: client.token, isAdmin };
+          setIsLogin(loginState.isLogin);
+          setToken(loginState.token);
+          setKeycloak(client);
+          dispatch(setLogin(loginState));
+        } else {
+          setIsLogin(false);
+          setToken(null);
+          setKeycloak(null);
+          dispatch(setLogin({ isLogin: false, token: null, isAdmin: false }));
+        }
       } catch (err) {
         console.error('Failed to initialize Keycloak', err);
         setIsLogin(false);
         setToken(null);
         setKeycloak(null);
-        dispatch(setLogin({ isLogin: false, token: null }));
+        dispatch(setLogin({ isLogin: false, token: null, isAdmin: false }));
       }
     };
     initKeycloak();

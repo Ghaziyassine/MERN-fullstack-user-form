@@ -8,7 +8,11 @@ function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { users, loading, error } = useSelector((state) => state.user);
+  const { isAdmin } = useSelector((state) => state.auth);
+
   const [isLogin, token, logout] = useAuth();
+
+  console.log(isAdmin)
 
   useEffect(() => {
     if (isLogin && token) {
@@ -54,7 +58,7 @@ function App() {
         {isLogin && (
           <button
             onClick={handleLogout}
-            className="py-2 px-4 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="py-2 px-4 bg-black text-white font-semibold rounded-md hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-red-500"
           >
             Logout
           </button>
@@ -132,12 +136,12 @@ function App() {
                 >
                   Update
                 </button>
-                <button
+                {!isAdmin &&<button
                   onClick={() => handleDelete(userObj._id)}
                   className="rounded-lg bg-red-500 py-3 px-6 text-xs font-bold uppercase text-white shadow-md transition-all hover:shadow-lg"
                 >
                   Delete
-                </button>
+                </button>}
               </div>
             </div>
           );
